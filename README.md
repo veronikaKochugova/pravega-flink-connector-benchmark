@@ -25,14 +25,19 @@ Pravega Flink Connector Benchmark
 
 ## Prerequisites
 
-1. Pravega cluster (not standalone) is deployed. Note the Pravega version for the compatibility.
+Pravega cluster (not standalone) is deployed. Note the Pravega version for the compatibility.
 
 ## Steps
 
-1.
+### Local
+
 ```bash
-docker run --network host -d akurilov/pravega-flink-connector-benchmark:1.0.0
+docker run --network host -d veronikakochugova/pravega-flink-connector-benchmark:1.0.0
 ```
+### On k8s cluster
+
+TODO
+
 
 # Jobs
 
