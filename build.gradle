@@ -1,130 +1,132 @@
 buildscript {
-	repositories {
-		mavenCentral()
-		maven {
-			url "https://plugins.gradle.org/m2/"
-		}
-	}
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
 }
 plugins {
-	id "java"
-	id "scala"
-	id "org.ajoberstar.grgit" version "3.1.1"
-	id "com.bmuschko.docker-remote-api" version "4.0.5"
+    id "java"
+    id "scala"
+    id "org.ajoberstar.grgit" version "3.1.1"
+    id "com.bmuschko.docker-remote-api" version "4.0.5"
 }
 repositories {
-	mavenCentral()
-	if (findProperty("repositoryUrl")) {
-		maven {
-			url findProperty("repositoryUrl")
-		}
-	} else {
-		jcenter()
-		mavenCentral()
-		maven {
-			url "https://repository.apache.org/snapshots"
-		}
-		maven {
-			url "https://oss.sonatype.org/content/repositories/snapshots"
-		}
-		maven {
-			url "https://oss.jfrog.org/jfrog-dependencies"
-		}
-	}
+    mavenCentral()
+    if (findProperty("repositoryUrl")) {
+        maven {
+            url findProperty("repositoryUrl")
+        }
+    } else {
+        jcenter()
+        mavenCentral()
+        maven {
+            url "https://repository.apache.org/snapshots"
+        }
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots"
+        }
+        maven {
+            url "https://oss.jfrog.org/jfrog-dependencies"
+        }
+    }
 }
 sourceCompatibility = 8
 targetCompatibility = 8
 version = "1.0.0"
 ext {
-	buildLibsPath = "build${File.separator}libs"
-	connectorSrcDir = "${project.buildDir}${File.separator}flink-connectors"
-	connectorJarDir = "${connectorSrcDir}${File.separator}${buildLibsPath}"
+    buildLibsPath = "build${File.separator}libs"
+    connectorSrcDir = "${project.buildDir}${File.separator}flink-connectors"
+    connectorJarDir = "${connectorSrcDir}${File.separator}${buildLibsPath}"
 }
 wrapper {
-	gradleVersion = "4.10.3"
+    gradleVersion = "4.10.3"
 }
 import org.ajoberstar.grgit.Grgit
+
 task cloneConnectorRepo {
-	doLast {
-		def destDir = file(connectorSrcDir)
-		if(destDir.exists()) {
-			if(destDir.isDirectory()) {
-				if(0 < destDir.list().length) {
-					return
-				}
-			} else {
-				throw new GradleException("${connectorSrcDir} is not a directory")
-			}
-		}
-		if(!destDir.exists()) {
-			def gitRepo = Grgit.clone {
-				uri = "https://github.com/pravega/flink-connectors.git"
-				dir = connectorSrcDir
-			}
-			gitRepo.reset {
-				commit = connectorCommit
-				mode = "hard"
-			}
-		}
-	}
+    doLast {
+        def destDir = file(connectorSrcDir)
+        if (destDir.exists()) {
+            if (destDir.isDirectory()) {
+                if (0 < destDir.list().length) {
+                    return
+                }
+            } else {
+                throw new GradleException("${connectorSrcDir} is not a directory")
+            }
+        }
+        if (!destDir.exists()) {
+            def gitRepo = Grgit.clone {
+                uri = "https://github.com/pravega/flink-connectors.git"
+                dir = connectorSrcDir
+            }
+            gitRepo.reset {
+                commit = connectorCommit
+                mode = "hard"
+            }
+        }
+    }
 }
 task connectorJar(type: Exec, dependsOn: cloneConnectorRepo) {
-	workingDir connectorSrcDir
-	commandLine "./gradlew", "-PpravegaVersion=${pravegaVersion}", "jar"
+    workingDir connectorSrcDir
+    commandLine "./gradlew", "-PpravegaVersion=${pravegaVersion}", "jar"
 }
 compileJava.dependsOn += connectorJar
 dependencies {
-	compile(
-		"org.apache.flink:flink-streaming-java_${flinkScalaVersion}:${flinkVersion}",
-		"org.scala-lang:scala-compiler:${scalaVersion}",
-		"org.scala-lang:scala-library:${scalaVersion}",
-		fileTree(dir: connectorJarDir, include: "*.jar"),
-	)
-	compile(group: 'io.pravega', name: 'pravega-client', version: pravegaVersion) {
-		exclude group:  'org.slf4j', module: 'slf4j-api'
-		exclude group: 'org.projectlombok', module: 'lombok'
-		exclude group: 'org.apache.curator', module: 'curator-recipes'
-	}
+    compile(
+            "org.apache.flink:flink-streaming-java_${flinkScalaVersion}:${flinkVersion}",
+            "org.scala-lang:scala-compiler:${scalaVersion}",
+            "org.scala-lang:scala-library:${scalaVersion}",
+            fileTree(dir: connectorJarDir, include: "*.jar"),
+    )
+    compile(group: 'io.pravega', name: 'pravega-client', version: pravegaVersion) {
+        exclude group: 'org.slf4j', module: 'slf4j-api'
+        exclude group: 'org.projectlombok', module: 'lombok'
+        exclude group: 'org.apache.curator', module: 'curator-recipes'
+    }
 }
 jar {
-	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	manifest {
-		attributes(
-			"Implementation-Title": project.name,
-			"Implementation-Version": project.version,
-			"Main-Class": "io.pravega.flink.benchmark.PravegaWriteBenchmarkJob",
-		)
-	}
-	from configurations
-		.runtime
-		.copyRecursive()
-		.collect {
-			zipTree(it)
-		}
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.version,
+                "Main-Class": "io.pravega.flink.benchmark.PravegaWriteBenchmarkJob",
+        )
+    }
+    from configurations
+            .runtime
+            .copyRecursive()
+            .collect {
+                zipTree(it)
+            }
 }
 // Docker tasks ////////////////////////////////////////////////////////////////////////////////////////////////////////
 import com.bmuschko.gradle.docker.tasks.image.*
 import com.bmuschko.gradle.docker.tasks.container.*
+
 task dockerBuildImage(type: DockerBuildImage) {
-	inputDir = project.projectDir
-	buildArgs = [
-			"FLINK_VERSION": flinkVersion,
-			"VERSION": project.version,
-	]
-	dockerFile = project.file("ci${File.separator}docker${File.separator}Dockerfile")
-	imageId = "${dockerRepo}/${project.name}".toString()
-	tags = [
-			"${dockerRepo}/${project.name}:${version}",
-			"${dockerRepo}/${project.name}:testing",
-	]
+    inputDir = project.projectDir
+    buildArgs = [
+            "FLINK_VERSION": flinkVersion,
+            "VERSION"      : project.version,
+    ]
+    dockerFile = project.file("ci${File.separator}docker${File.separator}Dockerfile")
+    imageId = "${dockerRepo}/${project.name}".toString()
+    tags = [
+            "${dockerRepo}/${project.name}:${version}",
+            "${dockerRepo}/${project.name}:testing",
+    ]
 }
 
 task dockerPushProductionImage(type: DockerPushImage) {
-	imageName = "${dockerRepo}/${project.name}".toString()
-	tag = "${dockerRepo}/${project.name}:${version}".toString()
+    imageName = "${dockerRepo}/${project.name}".toString()
+    tag = "${dockerRepo}/${project.name}:${version}".toString()
 }
 
 task dockerPushTestingImage(type: DockerPushImage, dependsOn: dockerBuildImage) {
-	imageName = "${dockerRepo}/${project.name}".toString()
-	tag = "${dockerRepo}/${project.name}:testing".toString()
+    imageName = "${dockerRepo}/${project.name}".toString()
+    tag = "${dockerRepo}/${project.name}:testing".toString()
 }
