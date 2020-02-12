@@ -112,17 +112,19 @@ task dockerBuildImage(type: DockerBuildImage) {
 			"VERSION": project.version,
 	]
 	dockerFile = project.file("ci${File.separator}docker${File.separator}Dockerfile")
-	imageId = "akurilov/${project.name}".toString()
+	imageId = "${dockerRepo}/${project.name}".toString()
 	tags = [
-			"akurilov/${project.name}:${version}",
-			"akurilov/${project.name}:testing",
+			"${dockerRepo}/${project.name}:${version}",
+			"${dockerRepo}/${project.name}:testing",
 	]
 }
+
 task dockerPushProductionImage(type: DockerPushImage) {
-	imageName = "akurilov/${project.name}".toString()
-	tag = "akurilov/${project.name}:${version}".toString()
+	imageName = "${dockerRepo}/${project.name}".toString()
+	tag = "${dockerRepo}/${project.name}:${version}".toString()
 }
+
 task dockerPushTestingImage(type: DockerPushImage, dependsOn: dockerBuildImage) {
-	imageName = "akurilov/${project.name}".toString()
-	tag = "akurilov/${project.name}:testing".toString()
+	imageName = "${dockerRepo}/${project.name}".toString()
+	tag = "${dockerRepo}/${project.name}:testing".toString()
 }
