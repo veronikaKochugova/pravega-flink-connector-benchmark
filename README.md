@@ -36,6 +36,10 @@ docker run --network host -d veronikakochugova/pravega-flink-connector-benchmark
 ```
 ### On k8s cluster
 
+```bash
+kubectl create -f ./k8s/
+```
+
 TODO
 
 
