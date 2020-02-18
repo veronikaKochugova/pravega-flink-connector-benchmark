@@ -48,7 +48,7 @@ TODO
 Common configuration parameters (w/ default values):
 * `--scope scope0`
 * `--stream stream0`
-* `--controllerUri tcp://127.0.0.1:9090`
+* `--controller tcp://127.0.0.1:9090`
 
 ## Write
     
