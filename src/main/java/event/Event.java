@@ -29,7 +29,7 @@ public class Event implements Serializable {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
@@ -37,7 +37,7 @@ public class Event implements Serializable {
         return key;
     }
 
-    public void setKey(String key) {
+    public void setKey(final String key) {
         this.key = key;
     }
 
@@ -45,7 +45,7 @@ public class Event implements Serializable {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(final String data) {
         this.data = data;
     }
 
@@ -53,7 +53,7 @@ public class Event implements Serializable {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(final long timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -61,7 +61,7 @@ public class Event implements Serializable {
         return taskindex;
     }
 
-    public void setTaskIndex(long index) {
+    public void setTaskIndex(final long index) {
         this.taskindex = index;
     }
 
@@ -69,7 +69,7 @@ public class Event implements Serializable {
         return sequenceNumber;
     }
 
-    public void setSequenceNumber(long sequenceNumber) {
+    public void setSequenceNumber(final long sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
     }
 

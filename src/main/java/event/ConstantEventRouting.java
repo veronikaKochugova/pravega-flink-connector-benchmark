@@ -6,12 +6,12 @@ public class ConstantEventRouting implements PravegaEventRouter {
 
     private final String routingKey;
 
-    ConstantEventRouting(String routingKey) {
+    ConstantEventRouting(final String routingKey) {
         this.routingKey = routingKey;
     }
 
     @Override
-    public String getRoutingKey(Object o) {
+    public String getRoutingKey(final Object o) {
         return routingKey;
     }
 }

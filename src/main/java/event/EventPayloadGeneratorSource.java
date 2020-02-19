@@ -17,7 +17,7 @@ public class EventPayloadGeneratorSource extends RichParallelSourceFunction {
     }
 
     @Override
-    public void run(SourceContext ctx) throws Exception {
+    public void run(final SourceContext ctx) throws Exception {
         long nextTimeNanos = 0L;
         long delayNanos = (rate > 0) ? new Double(1e9 / rate).longValue() : 0L;
         while (!cancelled) {

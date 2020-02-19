@@ -29,7 +29,7 @@ public class EventGeneratorImpl implements EventGenerator<Event> {
     private long timestamp;
     private HashMap<String, Long> sequenceCounters;
 
-    public EventGeneratorImpl(int numberOfKeys, int payloadSize, boolean produceHotKeys) {
+    public EventGeneratorImpl(final int numberOfKeys, final int payloadSize, final boolean produceHotKeys) {
         this.payloadSize = payloadSize;
         this.produceHotKeys = produceHotKeys;
         this.numberOfKeys = numberOfKeys - 1;
@@ -43,7 +43,7 @@ public class EventGeneratorImpl implements EventGenerator<Event> {
     }
 
     @Override
-    public Event nextEvent(long taskindex) {
+    public Event nextEvent(final long taskindex) {
         String routingKeykey = getRoutingKey(taskindex);
         long sequenceNumber = getRoutingKeySequence(routingKeykey);
         return new Event(routingKeykey, RandomStringUtils.randomAscii(payloadSize), timestamp++, sequenceNumber, taskindex);
@@ -55,7 +55,7 @@ public class EventGeneratorImpl implements EventGenerator<Event> {
     }
 
     @Override
-    public void restoreState(EventGeneratorState state) {
+    public void restoreState(final EventGeneratorState state) {
         if (!(state instanceof SnapshotState)) {
             throw new IllegalStateException(state.getClass().getName() + " is not of expected type " + SnapshotState.class.getName());
         }
@@ -64,7 +64,7 @@ public class EventGeneratorImpl implements EventGenerator<Event> {
         sequenceCounters = ((SnapshotState) state).getSequenceMap();
     }
 
-    private long getRoutingKeySequence(String key) {
+    private long getRoutingKeySequence(final String key) {
         long sequenceNum = 0;
         if (sequenceCounters.containsKey(key)) {
             sequenceNum = sequenceCounters.get(key) + 1;
@@ -74,7 +74,7 @@ public class EventGeneratorImpl implements EventGenerator<Event> {
         return sequenceNum;
     }
 
-    private String getRoutingKey(long taskindex) {
+    private String getRoutingKey(final long taskindex) {
         if (!produceHotKeys) {
             return keys.get(rand.nextInt(keys.size())) + "_" + String.valueOf(taskindex);
         }
